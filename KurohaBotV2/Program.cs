@@ -33,11 +33,14 @@ public static class Bot
         Success = 0
     }
 
+    internal static BotState state { get; private set; } = new BotState();
+
     public static YouTubeService youtube { get; private set; }
     public static Google.Apis.YouTube.v3.Data.LiveBroadcast stream;
     private static UserCredential youtubeCredential;
 
     internal static ChatQueue queue { get; private set; } = new ChatQueue();
+    internal static string? NextPageToken { get; private set; }
 
     public static void Main(string[] args)
     {
@@ -77,7 +80,7 @@ public static class Bot
         var request = youtube.LiveBroadcasts.List("snippet,status");
         request.Mine = true;
 
-         var activeStreams = await request.ExecuteAsync(); //once threw something about expired token, rerunning fixed. Fix later I guess.
+        var activeStreams = await request.ExecuteAsync(); //twice threw something about expired token, rerunning fixed. Fix later I guess.
 
         var allStreams = activeStreams.Items.ToList();
 
@@ -198,7 +201,12 @@ public static class Bot
 
         stream = streamLocal;
 
-        var id = streamLocal.Snippet.LiveChatId;
+        string StreamId = streamLocal.Id;
+        NextPageToken = null;
+        AttemptStateLoad(StreamId, out string? TempNextPageToken);
+        NextPageToken = TempNextPageToken;
+
+        var ChatId = streamLocal.Snippet.LiveChatId;
 
         var channel = GrpcChannel.ForAddress("https://youtube.googleapis.com");
 
@@ -216,7 +224,7 @@ public static class Bot
         Log.Debug("Entering chat stream");
 
 
-        string? pageToken = null;
+        
 
         _ = Task.Run(ReadConsole);
 
@@ -225,13 +233,13 @@ public static class Bot
             //Log.Debug("Loop");
             var chatRequest = new LiveChatMessageListRequest
             {
-                LiveChatId = id
+                LiveChatId = ChatId
             };
             if (!(pageToken == null))
             {
                 chatRequest = new LiveChatMessageListRequest
                 {
-                    LiveChatId = id,
+                    LiveChatId = ChatId,
                     PageToken = pageToken
                 };
             }
@@ -296,6 +304,66 @@ public static class Bot
         });
         youtubeCredential = credential;
         Log.Debug($"Youtube service: {youtube}");
+    }
+
+    private static void AttemptStateLoad(string? StreamId, out string? NextPageToken)
+    {
+        NextPageToken = null;
+        Log.Information($"Attempting to load...");
+        BotState? state = BotState.Load();
+        if (state == null)
+        {
+            Log.Information($"No save found, performing initialization...");
+            queue = new ChatQueue();
+            Log.Information($"Initialized!");
+        }
+        else if (state.StreamId != StreamId)
+        {
+            Log.Information($"Found a save file, but it appears to be for another stream. Use it anyway? (y/n)");
+            string? input = Console.ReadLine().ToLower();
+            Log.Debug($"Response (lowercase): {input}");
+            bool ValidInput = input == "y" || input == "n";
+            while (!ValidInput)
+            {
+                Console.WriteLine("y/n only");
+                input = Console.ReadLine().ToLower();
+                Log.Debug($"Response (lowercase): {input}");
+                ValidInput = input == "y" || input == "n";
+            }
+            if (input == "y")
+            {
+                queue = state.queue;
+                //intentionally omit nextPageToken, as it's for another stream.
+            }
+            else
+            {
+                queue = new ChatQueue();
+            }
+        }
+        else
+        {
+            Log.Information($"Found a save file! Use it? (y/n)");
+            string? input = Console.ReadLine().ToLower();
+            Log.Debug($"Response (lowercase): {input}");
+            bool ValidInput = input == "y" || input == "n";
+            while (!ValidInput)
+            {
+                Console.WriteLine("y/n only");
+                input = Console.ReadLine().ToLower();
+                Log.Debug($"Response (lowercase): {input}");
+                ValidInput = input == "y" || input == "n";
+            }
+
+            if (input == "y")
+            {
+                queue = state.queue;
+                NextPageToken = state.NextPageToken;
+            }
+            else
+            {
+                queue = new ChatQueue();
+            }
+        }
     }
 
     private static void Exit(ExitCodes exitCode = ExitCodes.Success, string? message = null)

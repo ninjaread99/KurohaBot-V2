@@ -27,6 +27,10 @@ namespace KurohaBotV2
         
         public static void HandleMessage(LiveChatMessage message)
         {
+            string sender = message.AuthorDetails.DisplayName;
+            string senderId = message.AuthorDetails.ChannelId;
+            ChatMember chatter = new ChatMember(sender, senderId);
+
             string text = message.Snippet.DisplayMessage;
             if (text.Length < 1)
             {
@@ -36,8 +40,7 @@ namespace KurohaBotV2
             {
                 return;
             }
-            string sender = message.AuthorDetails.DisplayName;
-            string senderId = message.AuthorDetails.ChannelId;
+            
 
             string[] textParts = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             string command = textParts[0].Substring(1);
@@ -53,12 +56,12 @@ namespace KurohaBotV2
             else if (command.Equals("join"))
             {
                 Log.Debug("Adding {Sender} ({SenderId}) to queue", sender, senderId);
-                Bot.queue.Join(sender, senderId);
+                Bot.queue.Join(chatter);
             }
             else if (command.Equals("leave"))
             {
                 Log.Debug("Removing {Sender} ({SenderId}) from queue", sender, senderId);
-                Bot.queue.Leave(senderId);
+                Bot.queue.Leave(chatter);
             }
 
 

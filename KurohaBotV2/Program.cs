@@ -1,5 +1,9 @@
-﻿#define VERBOSE_FILE
+﻿#if DEBUG
 #define VERBOSE_CONSOLE
+#endif
+
+#define VERBOSE_FILE
+
 
 //#define SELF_TEST
 
@@ -27,10 +31,14 @@ using KurohaBotV2;
 
 public static class Bot
 {
-    enum ExitCodes
+    const string version = "2.0.0";
+#warning Don't forget to update the version!
+
+    internal enum ExitCode
     {
         StreamNotFound = -1,
-        Success = 0
+        Success = 0,
+        StreamEnded = 1
     }
 
     internal static BotState state { get; private set; } = new BotState();
@@ -52,18 +60,17 @@ public static class Bot
 #if VERBOSE_CONSOLE
         ConsoleLevel = Serilog.Events.LogEventLevel.Verbose;
 #endif
+#endif
 #if VERBOSE_FILE
         FileLevel = Serilog.Events.LogEventLevel.Verbose;
 #endif
-#endif
 
-#if !INPUT_VIA_CONSOLE
         Log.Logger = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.File("Log.log", restrictedToMinimumLevel: FileLevel).WriteTo.Console(restrictedToMinimumLevel: ConsoleLevel, outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}").CreateLogger();
-#else
-        Log.Logger = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.File("Log.log", restrictedToMinimumLevel: FileLevel).CreateLogger();
-#endif
-
-        string version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown";
+        //#if !INPUT_VIA_CONSOLE
+        //        Log.Logger = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.File("Log.log", restrictedToMinimumLevel: FileLevel).WriteTo.Console(restrictedToMinimumLevel: ConsoleLevel, outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}").CreateLogger();
+        //#else
+        //        Log.Logger = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.File("Log.log", restrictedToMinimumLevel: FileLevel).CreateLogger();
+        //#endif
 
         Log.Information("Started!");
         Log.Information($"Version: {version}");
@@ -145,7 +152,7 @@ public static class Bot
 
         if (allStreams.Count == 0)
         {
-            Exit(ExitCodes.StreamNotFound, $"Either an error occurred getting streams, or no streams are currently in the \"Ready\", \"Testing\", or \"Live\" internal states. Please check the state of your current stream.");
+            Exit(ExitCode.StreamNotFound, $"Either an error occurred getting streams, or no streams are currently in the \"Ready\", \"Testing\", or \"Live\" internal states. Please check the state of your current stream.");
         }
         var Streams = allStreams.Where(s => s.Status.LifeCycleStatus == "ready" ||
         s.Status.LifeCycleStatus == "testing" || s.Status.LifeCycleStatus == "live").ToList();
@@ -153,7 +160,7 @@ public static class Bot
         {
             Log.Fatal($"No valid streams were found. Stream must be in the internal states of  \"Ready\", \"Testing\", or \"Live\"");
             //Log.Debug($"allStreams: {string.Join(", ", allStreams.Items.Select(s => $"{s.Snippet.Title}: {s.Status?.LifeCycleStatus}"))}\nStreams: {string.Join(", ", Streams.Items.Select(s => $"{s.Snippet.Title}: {s.Status?.LifeCycleStatus}"))}");
-            Environment.Exit((int)ExitCodes.StreamNotFound);
+            Environment.Exit((int)ExitCode.StreamNotFound);
         }
 
         var streamLocal = Streams[0];
@@ -223,24 +230,41 @@ public static class Bot
 
         Log.Debug("Entering chat stream");
 
-
-        
-
         _ = Task.Run(ReadConsole);
 
+        var StillLiveRequest = youtube.LiveBroadcasts.List("status");
+        StillLiveRequest.Id = stream.Id;
+
+        ulong iterations = 0;
+
+        //Main loop
         while (true)
         {
+            iterations++;
+
+            if (iterations%3==0)
+            {
+                var result = await StillLiveRequest.ExecuteAsync();
+                var currentStream = result.Items.FirstOrDefault();
+                if (currentStream == null || currentStream.Status.LifeCycleStatus is not "live" or "ready" or "testing")
+                {
+                    Log.Information("Stream appears to have ended. Saving status and exiting.");
+                    state.Save();
+                    Exit(ExitCode.StreamEnded);
+                }
+            }
+
             //Log.Debug("Loop");
             var chatRequest = new LiveChatMessageListRequest
             {
                 LiveChatId = ChatId
             };
-            if (!(pageToken == null))
+            if (!(NextPageToken == null))
             {
                 chatRequest = new LiveChatMessageListRequest
                 {
                     LiveChatId = ChatId,
-                    PageToken = pageToken
+                    PageToken = NextPageToken
                 };
             }
 
@@ -252,7 +276,8 @@ public static class Bot
 
             await foreach (var response in call.ResponseStream.ReadAllAsync())
             {
-                pageToken = response.NextPageToken;
+                NextPageToken = response.NextPageToken;
+                state.Save();
                 foreach (var message in response.Items)
                 {
                     Log.Information(
@@ -366,19 +391,25 @@ public static class Bot
         }
     }
 
-    private static void Exit(ExitCodes exitCode = ExitCodes.Success, string? message = null)
+    internal static void Exit(ExitCode exitCode = ExitCode.Success, string? message = null)
     {
-        if (exitCode == ExitCodes.Success)
+        if (exitCode == ExitCode.Success)
         {
             Log.Information(message??"No exit message provided");
         }
-        else
+        else if (exitCode < 0)
         {
             message = message ?? "No exit reason provided.";
             message += " If the problem persists, please contact @ninjaread99 on Discord";
             Log.Fatal(message);
         }
-        Environment.Exit((int)exitCode);
+        else if (exitCode > 0)
+        {
+            message = message ?? "No exit reason provided.";
+            message += " If this happened unintentionally,, please contact @ninjaread99 on Discord";
+            Log.Information(message);
+        }
+            Environment.Exit((int)exitCode);
     }
 }
 

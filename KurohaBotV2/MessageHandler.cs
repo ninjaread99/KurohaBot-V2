@@ -78,7 +78,7 @@ namespace KurohaBotV2
         private static void HelpChatOutput()
         {
             string message = "Queue commands: !join, !leave. Misc: !help";
-            
+            MessageSender.SendMessage(message);
         }
 
 

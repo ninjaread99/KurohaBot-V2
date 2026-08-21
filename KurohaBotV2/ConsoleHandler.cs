@@ -59,7 +59,7 @@ namespace KurohaBotV2
                 Bot.queue.ClearStale();
                 Log.Information("Cleared stale list");
             }
-            else if (command.Equals("nostale") || command.Equals("no stale"))
+            else if (command.Equals("nostale") || command.Equals("no stale") || command.Equals("disablestale") || command.Equals("disable stale"))
             {
                 Bot.queue.DisableStaleCheck();
                 Log.Information("Disabled stale check");
@@ -68,6 +68,22 @@ namespace KurohaBotV2
             {
                 Bot.queue.EnableStaleCheck();
                 Log.Information("Enabled stale check");
+            }
+
+            else if (command.Equals("stop"))
+            {
+                Log.Debug("Attempting to stop...");
+                Log.Warning("WARNING: stop received. Stopping will close this bot. Type \"yes\" to exit.");
+                string? input = Console.ReadLine()?.ToLower();
+                if (input == "yes")
+                {
+                    Bot.state.Save();
+                    Bot.Exit(Bot.ExitCode.Success);
+                }
+                else
+                {
+                    Log.Information("Process continuing...");
+                }
             }
 
             else

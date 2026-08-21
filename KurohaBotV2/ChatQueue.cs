@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json.Serialization;
+using System.Diagnostics;
 
 namespace KurohaBotV2
 {
@@ -14,11 +15,11 @@ namespace KurohaBotV2
         List<ChatMember> queue = new List<ChatMember>();
         [JsonInclude]
         HashSet<ChatMember> stale = new HashSet<ChatMember>();
-
+        [JsonInclude]
         bool CheckStale = true;
 
         public ChatQueue() { }
-
+        [JsonInclude]
         public bool QueueOpen = true;
 
         public void Join(ChatMember chatter)
@@ -27,6 +28,10 @@ namespace KurohaBotV2
             {
                 //sender is on the stale list, and can not join again.
                 Log.Debug("User {Name} ({Id} on stale list.", chatter.name, chatter.id);
+                return;
+            }
+            if (!QueueOpen)
+            {
                 return;
             }
 
@@ -40,13 +45,14 @@ namespace KurohaBotV2
             }
             Log.Debug("User {Name} ({Id}) joined the queue", name, Id);
             queue.Add(new ChatMember(name, Id));
+            Bot.state.Save();
         }
 
         public void Leave(ChatMember chatter)
         {
             string Id = chatter.id;
             queue.RemoveAll(x => x.id == Id);
-            
+            Bot.state.Save();
         }
 
         public ChatMember? GetNext()
@@ -58,6 +64,7 @@ namespace KurohaBotV2
             ChatMember next = queue[0];
             stale.Add(next);
             queue.RemoveAt(0);
+            Bot.state.Save();
             return next;
         }
 
@@ -69,11 +76,13 @@ namespace KurohaBotV2
         public void ClearStale()
         {
             stale.Clear();
+            Bot.state.Save();
         }
 
         public void RemoveIdFromStale(ChatMember chatter)
         {
             stale.Remove(chatter);
+            Bot.state.Save();
         }
 
         public void DisableStaleCheck()
@@ -89,6 +98,7 @@ namespace KurohaBotV2
         public void ClearQueue()
         {
             queue.Clear();
+            Bot.state.Save();
         }
     }
 }

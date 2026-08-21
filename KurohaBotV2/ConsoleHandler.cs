@@ -74,6 +74,7 @@ namespace KurohaBotV2
             {
                 Log.Debug("Attempting to stop...");
                 Log.Warning("WARNING: stop received. Stopping will close this bot. Type \"yes\" to exit.");
+                Console.Write(">>");
                 string? input = Console.ReadLine()?.ToLower();
                 if (input == "yes")
                 {

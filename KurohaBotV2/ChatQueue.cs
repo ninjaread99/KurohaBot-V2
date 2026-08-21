@@ -43,7 +43,7 @@ namespace KurohaBotV2
                 Log.Debug("User {Name} ({Id}) is already in the queue", name, Id);
                 return;
             }
-            Log.Debug("User {Name} ({Id}) joined the queue", name, Id);
+            Log.Information("User {Name} ({Id}) joined the queue", name, Id);
             queue.Add(new ChatMember(name, Id));
             Bot.state.Save();
         }
@@ -51,7 +51,12 @@ namespace KurohaBotV2
         public void Leave(ChatMember chatter)
         {
             string Id = chatter.id;
+            if (!queue.Contains(chatter))
+            {
+                return;
+            }
             queue.RemoveAll(x => x.id == Id);
+            Log.Information("User {Name} ({Id}) Left the queue", chatter.name, chatter.id);
             Bot.state.Save();
         }
 

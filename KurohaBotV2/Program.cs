@@ -31,7 +31,7 @@ using KurohaBotV2;
 
 public static class Bot
 {
-    const string version = "2.0.0";
+    const string version = "2.0.1";
 #warning Don't forget to update the version!
 
     internal enum ExitCode
@@ -237,6 +237,8 @@ public static class Bot
 
         ulong iterations = 0;
 
+        Log.Information("Ready!");
+
         //Main loop
         while (true)
         {
@@ -280,7 +282,7 @@ public static class Bot
                 state.Save();
                 foreach (var message in response.Items)
                 {
-                    Log.Information(
+                    Log.Debug(
                         "{Author}: {Message}",
                         message.AuthorDetails.DisplayName,
                         message.Snippet.DisplayMessage
@@ -345,12 +347,14 @@ public static class Bot
         else if (state.StreamId != StreamId)
         {
             Log.Information($"Found a save file, but it appears to be for another stream. Use it anyway? (y/n)");
+            Console.Write(">>");
             string? input = Console.ReadLine().ToLower();
             Log.Debug($"Response (lowercase): {input}");
             bool ValidInput = input == "y" || input == "n";
             while (!ValidInput)
             {
                 Console.WriteLine("y/n only");
+                Console.Write(">>");
                 input = Console.ReadLine().ToLower();
                 Log.Debug($"Response (lowercase): {input}");
                 ValidInput = input == "y" || input == "n";
@@ -368,12 +372,14 @@ public static class Bot
         else
         {
             Log.Information($"Found a save file! Use it? (y/n)");
+            Console.Write(">>");
             string? input = Console.ReadLine().ToLower();
             Log.Debug($"Response (lowercase): {input}");
             bool ValidInput = input == "y" || input == "n";
             while (!ValidInput)
             {
                 Console.WriteLine("y/n only");
+                Console.Write(">>");
                 input = Console.ReadLine().ToLower();
                 Log.Debug($"Response (lowercase): {input}");
                 ValidInput = input == "y" || input == "n";

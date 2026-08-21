@@ -55,7 +55,7 @@ namespace KurohaBotV2
 
             else if (command.Equals("join"))
             {
-                Log.Debug("Adding {Sender} ({SenderId}) to queue", sender, senderId);
+                Log.Debug("Attempting to add {Sender} ({SenderId}) to queue", sender, senderId);
                 Bot.queue.Join(chatter);
             }
             else if (command.Equals("leave"))

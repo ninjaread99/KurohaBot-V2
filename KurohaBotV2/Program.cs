@@ -417,7 +417,9 @@ public static class Bot
             Log.Information(message);
             Log.Information("Exiting with exit code {code}", exitCode);
         }
-            Environment.Exit((int)exitCode);
+        Console.WriteLine("Press any key to exit...");
+        Console.ReadLine();
+        Environment.Exit((int)exitCode);
     }
 }
 

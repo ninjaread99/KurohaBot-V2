@@ -30,7 +30,7 @@ using KurohaBotV2;
 
 public static class Bot
 {
-    const string version = "2.0.2";
+    const string version = "2.0.3";
 #warning Don't forget to update the version!
 
     internal enum ExitCode
@@ -401,18 +401,21 @@ public static class Bot
         if (exitCode == ExitCode.Success)
         {
             Log.Information(message??"No exit message provided");
+            Log.Information("Exiting with exit code {code}", exitCode);
         }
         else if (exitCode < 0)
         {
             message = message ?? "No exit reason provided.";
             message += " If the problem persists, please contact @ninjaread99 on Discord";
             Log.Fatal(message);
+            Log.Information("Exiting with exit code {code}", exitCode);
         }
         else if (exitCode > 0)
         {
             message = message ?? "No exit reason provided.";
-            message += " If this happened unintentionally,, please contact @ninjaread99 on Discord";
+            message += " If this happened unintentionally, please contact @ninjaread99 on Discord";
             Log.Information(message);
+            Log.Information("Exiting with exit code {code}", exitCode);
         }
             Environment.Exit((int)exitCode);
     }

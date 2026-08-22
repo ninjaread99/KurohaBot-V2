@@ -7,7 +7,6 @@
 
 //#define SELF_TEST
 
-#warning remember to update version when needed!
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
@@ -31,7 +30,7 @@ using KurohaBotV2;
 
 public static class Bot
 {
-    const string version = "2.0.1";
+    const string version = "2.0.2";
 #warning Don't forget to update the version!
 
     internal enum ExitCode
@@ -348,14 +347,14 @@ public static class Bot
         {
             Log.Information($"Found a save file, but it appears to be for another stream. Use it anyway? (y/n)");
             Console.Write(">>");
-            string? input = Console.ReadLine().ToLower();
+            string? input = Console.ReadLine()?.ToLower();
             Log.Debug($"Response (lowercase): {input}");
             bool ValidInput = input == "y" || input == "n";
             while (!ValidInput)
             {
                 Console.WriteLine("y/n only");
                 Console.Write(">>");
-                input = Console.ReadLine().ToLower();
+                input = Console.ReadLine()?.ToLower();
                 Log.Debug($"Response (lowercase): {input}");
                 ValidInput = input == "y" || input == "n";
             }
@@ -373,14 +372,14 @@ public static class Bot
         {
             Log.Information($"Found a save file! Use it? (y/n)");
             Console.Write(">>");
-            string? input = Console.ReadLine().ToLower();
+            string? input = Console.ReadLine()?.ToLower();
             Log.Debug($"Response (lowercase): {input}");
             bool ValidInput = input == "y" || input == "n";
             while (!ValidInput)
             {
                 Console.WriteLine("y/n only");
                 Console.Write(">>");
-                input = Console.ReadLine().ToLower();
+                input = Console.ReadLine()?.ToLower();
                 Log.Debug($"Response (lowercase): {input}");
                 ValidInput = input == "y" || input == "n";
             }

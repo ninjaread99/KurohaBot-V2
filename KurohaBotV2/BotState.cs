@@ -64,6 +64,7 @@ namespace KurohaBotV2
             catch (JsonException e)
             {
                 Log.Warning("Malformed Json found, defaulting to first-time initialization.");
+                Log.Debug("Exception: {e}", e);
                 return null;
             }
         }

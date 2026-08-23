@@ -30,7 +30,7 @@ using KurohaBotV2;
 
 public static class Bot
 {
-    const string version = "2.0.3";
+    const string version = "2.0.4";
 #warning Don't forget to update the version!
 
     internal enum ExitCode
@@ -418,7 +418,7 @@ public static class Bot
             Log.Information("Exiting with exit code {code}", exitCode);
         }
         Console.WriteLine("Press any key to exit...");
-        Console.ReadLine();
+        Console.ReadKey();
         Environment.Exit((int)exitCode);
     }
 }

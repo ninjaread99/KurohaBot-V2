@@ -1,11 +1,11 @@
 PRIVACY POLICY:
 
-"KurohaBot" ("the bot") Version 2 (V2) access the following:
+"KurohaBot" ("the bot") Version 2 (V2) accesses the following:
   Information about your current streams, including the name and ID
   Live chat messages, including content, sender name, and sender ID
 
 KurohaBot also stores data. All such data is stored locally, and includes:
-  Information on sent messages, including the sender name and sender ID
+  Information on sent messages, including the sender name and sender ID, but not message contents (V2)
   Sequence of certain sent messages, but not exact time.
   Data from the last time running, including a token to resume from the last processed message, the queue before last shutdown and the ID of the stream used on last run.
   Logs related to debugging of KurohaBot
@@ -20,12 +20,15 @@ Deletion of data:
   All data is stored locally in the same directory as the .exe file. To delete stored data, simply delete the related files:
     To delete logs, including those related to debugging, delete "Log.log"
     To delete information related to restoring previous state, delete "State.json" and, if present, "State.json.tmp"
+
+Revocation of permissions:
+  Access to your google account may be revoked at "myaccount.google.com/permissions"
   
 
 TERMS OF SERVICE:
 
 Usage of KurohaBot:
-  KurohaBot V2 and all subsequent versions are, unless explicitly stated otherwise, are provided as-is for the
+  KurohaBot V2 and all subsequent versions, unless explicitly stated otherwise, are provided as-is for the
   express purpose of helping manage live broadcasts via platforms such as YouTube and Twitch. This management includes,
   but is not limited to, stream moderation, queue systems, and chat managements. You are responsible for ensuring your
   usage of KurohaBot complies with the usage policies of any platforms used.

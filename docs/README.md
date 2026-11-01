@@ -1,5 +1,8 @@
 The following is subject to change at any time.
 
+PURPOSE:
+This app is to help streamers by automatically creating a queue based on the voluntary opt-in of chat members (sending "!join"), with some extra features.
+
 PRIVACY POLICY:
 
 "KurohaBot" ("the bot") Version 2 (V2) accesses the following:

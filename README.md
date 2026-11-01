@@ -1,3 +1,5 @@
+The following is subject to change at any time.
+
 PRIVACY POLICY:
 
 "KurohaBot" ("the bot") Version 2 (V2) accesses the following:
@@ -40,7 +42,6 @@ No Warranty:
 
 KurohaBot V2 integrates with YouTube, and future versions plan to allow integration with other platforms, such as twitch.
 By using any module to integrate KurohaBot with a given platform, you agree to that platforms Terms of Service.
-
 
 
 (Last updated Aug 26, 2026)
